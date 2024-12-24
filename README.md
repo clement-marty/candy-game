@@ -1,4 +1,4 @@
-# Candy Crush Clone
+# Candy Game
 
 This is a simple Candy Crush clone implemented in Python using the Pygame library.
 
