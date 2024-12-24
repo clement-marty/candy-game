@@ -45,6 +45,7 @@ cells = resize_cells(TPACK.CELLS, CELL_SIZE)
 movements, grid = fill_grid(grid, cells)
 
 screen = pygame.display.set_mode(screen_size)
+pygame.display.set_caption('Candy Game')
 animation_manager = AnimationManager()
 score_manager = ScoreManager(cells, SCORE_OBJECTIVES)
 selector = (None, None)
