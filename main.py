@@ -11,7 +11,7 @@ def read_config() -> None:
     '''Reads the configuration file'''
     config = configparser.ConfigParser()
     config.read('config.ini')
-    global GAME_FPS, TPACK, GRID_SIZE, CELL_SIZE, GRID_MARGIN
+    global GAME_FPS, TPACK, GRID_SIZE, CELL_SIZE, GRID_MARGIN, SCORE_OBJECTIVES
     GAME_FPS = config.getint('general', 'frames_per_second')
     try:
         TPACK = assets.TexturePack(f'assets/{config.get('general', 'texture_pack')}')
@@ -23,6 +23,10 @@ def read_config() -> None:
     )
     CELL_SIZE = config.getint('graphics', 'cell_size')
     GRID_MARGIN = config.getint('graphics', 'grid_margin')
+    SCORE_OBJECTIVES = []
+    for i in ['red_cells', 'green_cells', 'blue_cells', 'yellow_cells', 'purple_cells', 'pink_cells']:
+        SCORE_OBJECTIVES.append(config.getint('game-objectives', i))
+
     
 # Initialize the game
 read_config()
@@ -42,7 +46,7 @@ movements, grid = fill_grid(grid, cells)
 
 screen = pygame.display.set_mode(screen_size)
 animation_manager = AnimationManager()
-score_manager = ScoreManager(cells, [10, 10, 10, 10, 10, 10])
+score_manager = ScoreManager(cells, SCORE_OBJECTIVES)
 selector = (None, None)
 
 # Make sure the first generated grid does not contain any alignments
