@@ -12,8 +12,8 @@ This is a simple Candy Crush clone implemented in Python using the Pygame librar
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/candy-crush-clone.git
-    cd candy-crush-clone
+    git clone https://github.com/clement-marty/candy-game.git
+    cd candy-game
     ```
 
 2. Create a virtual environment and activate it:
