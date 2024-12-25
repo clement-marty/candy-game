@@ -95,26 +95,33 @@ def detect_alignments(g: G) -> tuple[dict[str, int], G]:
         for x in range(len(g[y])):
 
             # Check hotizontal alignment
-            if x < len(g[y])-2 and g[y][x][0] == g[y][x+1][0] == g[y][x+2][0]:
-                aligned_cells.add((x, y))
-                aligned_cells.add((x+1, y))
-                aligned_cells.add((x+2, y))
+            n, i = 1, 1
+            while x+i < len(g[y]) and g[y][x][0] == g[y][x+i][0]:
+                n, i = n+1, i+1
+            if n >= 3:
+                for i in range(n): aligned_cells.add((x+i, y))
 
-            # Check vertical alignment
-            if y < len(g)-2 and g[y][x][0] == g[y+1][x][0] == g[y+2][x][0]:
-                aligned_cells.add((x, y))
-                aligned_cells.add((x, y+1))
-                aligned_cells.add((x, y+2))
+            # Check vertical alignmen
+            n, i = 1, 1
+            while y+i < len(g) and g[y][x][0] == g[y+i][x][0]:
+                n, i = n+1, i+1
+            if n >= 3:
+                for i in range(n): aligned_cells.add((x, y+i))
 
-            # Check diagonal alignment
-            if y < len(g)-2 and x < len(g[y])-2 and g[y][x][0] == g[y+1][x+1][0] == g[y+2][x+2][0]:
-                aligned_cells.add((x, y))
-                aligned_cells.add((x+1, y+1))
-                aligned_cells.add((x+2, y+2))
-            if y < len(g)-2 and x > 1 and g[y][x][0] == g[y+1][x-1][0] == g[y+2][x-2][0]:
-                aligned_cells.add((x, y))
-                aligned_cells.add((x-1, y+1))
-                aligned_cells.add((x-2, y+2))
+            # Check diagonal alignments
+            n, i = 1, 1
+            while y+i < len(g) and x+i < len(g[y]) and g[y][x][0] == g[y+i][x+i][0]:
+                n, i = n+1, i+1
+            if n >= 3:
+                for i in range(n): aligned_cells.add((x+i, y+i))
+
+            n, i = 1, 1
+            while y+i < len(g) and x-i >= 0 and g[y][x][0] == g[y+i][x-i][0]:
+                n, i = n+1, i+1
+            if n >= 3:
+                for i in range(n): aligned_cells.add((x-i, y+i))
+            
+
 
     # Remove aligned cells
     new_grid = []
