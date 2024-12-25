@@ -21,6 +21,7 @@ class TexturePack:
     PATHS = {
         'BACKGROUND_IMAGE': 'background.png',
         'CHECKMARK_ICON': 'checkmark_icon.png',
+        'RAINBOW_CELL': 'cells/rainbow_cell.png',
         'RED_CELL': 'cells/red_cell.png',
         'GREEN_CELL': 'cells/green_cell.png',
         'BLUE_CELL': 'cells/blue_cell.png',
