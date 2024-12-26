@@ -82,15 +82,14 @@ def movements_from_grid(g: G) -> M:
 
 
 
-def detect_alignments(g: G, cells: list[C], rainbow_cell: C, pre_game_detection: bool = False) -> tuple[dict[str, int], G]:
+def detect_alignments(g: G, cells: list[C], rainbow_cell: C, add_special_cells: bool = True) -> tuple[dict[str, int], int, G]:
     '''Detects all the aligned cells in the grid and removes them
 
     :param G g: the grid to check
     :param list[C] cells: the list of normal cell types
     :param C rainbow_cell: the rainbow cell type
-    :param bool pre_game_detection: Does the function is called before the game has started?
-        Does the function has to create special cells?
-    :return tuple[dict[str, int], G]: the number of aligned cells per type and the new grid
+    :param bool add_special_cells: Does the function has to create special cells?
+    :return tuple[dict[str, int], G]: the number of aligned cells per type, the number of rainbow cells added and the new grid
     '''
     aligned_cells = set()
     special_cells = set()
@@ -147,7 +146,7 @@ def detect_alignments(g: G, cells: list[C], rainbow_cell: C, pre_game_detection:
                 new_grid[y][x] = (None, None)
 
     # Add the specials cells
-    if not pre_game_detection:
+    if add_special_cells:
         for x, y in special_cells:
             new_grid[y][x] = rainbow_cell
 
@@ -159,7 +158,11 @@ def detect_alignments(g: G, cells: list[C], rainbow_cell: C, pre_game_detection:
         else:
             aligned_cells_count[g[y][x][0]] = 1
     
-    return aligned_cells_count, new_grid
+    return (
+        aligned_cells_count,
+        len(special_cells) if add_special_cells else 0,
+        new_grid
+    )
 
 
 def special_cell_interaction(g: G, x: int, y: int, rainbow_cell: C, other_cell: C) -> tuple[dict[str, int], G]:
