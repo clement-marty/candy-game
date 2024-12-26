@@ -157,6 +157,39 @@ def detect_alignments(g: G, rainbow_cell: C, pre_game_detection: bool = False) -
     return aligned_cells_count, new_grid
 
 
+def special_cell_interaction(g: G, x: int, y: int, rainbow_cell: C, other_cell: C) -> tuple[dict[str, int], G]:
+    '''Applies the effect of a special cell on the grid, 
+    by removing all cells of the same type of the one that was interacted with
+
+    :param G g: the grid to check
+    :param int x: the x coordinate of the special cell
+    :param int y: the y coordinate of the special cell
+    :param C rainbow_cell: the rainbow cell
+    :param C other_cell: the other cell
+    :return tuple[dict[str, int], G]: the number of aligned cells per type and the new grid
+    '''
+
+    # Copy the grid
+    new_grid = []
+    for i in g:
+        new_grid.append(i.copy())
+
+    # Remove the special cell
+    new_grid[y][x] = (None, None)
+
+    # Remove all occurences of the interacted cell
+    cell_type = other_cell[0]
+    aligned_cell_count = {cell_type: 0}
+    for y in range(len(g)):
+        for x in range(len(g[y])):
+            if g[y][x][0] == cell_type:
+                new_grid[y][x] == (None, None)
+                aligned_cell_count[cell_type] += 1
+
+    return aligned_cell_count, new_grid    
+
+
+
 
 class ScoreManager:
 
