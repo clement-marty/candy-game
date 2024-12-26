@@ -51,13 +51,13 @@ score_manager = ScoreManager(cells, SCORE_OBJECTIVES)
 selector = (None, None)
 
 # Make sure the first generated grid does not contain any alignments
-aligned_cells, grid = detect_alignments(grid)
+aligned_cells, grid = detect_alignments(grid, rainbow_cell=resize_cells([('rainbow', TPACK.RAINBOW_CELL)], CELL_SIZE)[0], pre_game_detection=True)
 while aligned_cells:
     movements, grid = fill_grid(grid, cells)
     for mov in movements:
         x, y, cell = mov[2], mov[3], mov[4]
         grid[y][x] = cell
-    aligned_cells, grid = detect_alignments(grid)
+    aligned_cells, grid = detect_alignments(grid, rainbow_cell=resize_cells([('rainbow', TPACK.RAINBOW_CELL)], CELL_SIZE)[0], pre_game_detection=True)
 
 movements = movements_from_grid(grid)
 grid = generate_grid(*GRID_SIZE)
@@ -136,7 +136,7 @@ while running:
         selector = (None, None)
 
     else: # If the animations are done, we check for alignments
-        aligned_cells, grid = detect_alignments(grid)
+        aligned_cells, grid = detect_alignments(grid, rainbow_cell=resize_cells([('rainbow', TPACK.RAINBOW_CELL)], CELL_SIZE)[0])
         score_manager.update_score_from_dict(aligned_cells)
         movements, grid = fill_grid(grid, cells)
         animation_manager.add_animations(LinearAnimation.from_movements(movements, CELL_SIZE, (GRID_MARGIN, GRID_MARGIN+CELL_SIZE), speed=1000, delay=0.01))
