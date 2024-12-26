@@ -95,29 +95,25 @@ def detect_alignments(g: G) -> tuple[dict[str, int], G]:
         for x in range(len(g[y])):
 
             # Check hotizontal alignment
-            n, i = 1, 1
-            while x+i < len(g[y]) and g[y][x][0] == g[y][x+i][0]:
-                n, i = n+1, i+1
+            n = 1
+            while x+n < len(g[y]) and g[y][x][0] == g[y][x+n][0]: n += 1
             if n >= 3:
                 for i in range(n): aligned_cells.add((x+i, y))
 
-            # Check vertical alignmen
-            n, i = 1, 1
-            while y+i < len(g) and g[y][x][0] == g[y+i][x][0]:
-                n, i = n+1, i+1
+            # Check vertical alignment
+            n = 1
+            while y+n < len(g) and g[y][x][0] == g[y+n][x][0]: n += 1
             if n >= 3:
                 for i in range(n): aligned_cells.add((x, y+i))
 
             # Check diagonal alignments
-            n, i = 1, 1
-            while y+i < len(g) and x+i < len(g[y]) and g[y][x][0] == g[y+i][x+i][0]:
-                n, i = n+1, i+1
+            n = 1
+            while y+n < len(g) and x+n < len(g[y]) and g[y][x][0] == g[y+n][x+n][0]: n += 1
             if n >= 3:
                 for i in range(n): aligned_cells.add((x+i, y+i))
 
-            n, i = 1, 1
-            while y+i < len(g) and x-i >= 0 and g[y][x][0] == g[y+i][x-i][0]:
-                n, i = n+1, i+1
+            n = 1
+            while y+n < len(g) and x-n >= 0 and g[y][x][0] == g[y+n][x-n][0]: n += 1
             if n >= 3:
                 for i in range(n): aligned_cells.add((x-i, y+i))
             
