@@ -93,8 +93,11 @@ while running:
                 if can_play and selector != (None, None):
                     if (x == selector[0] and abs(y - selector[1]) == 1) or (y == selector[1] and abs(x - selector[0]) == 1):
 
-                        # Check if this is an interaction with a rainbow cell
-                        if grid[y][x][0] == 'rainbow' or grid[selector[1]][selector[0]][0] == 'rainbow':
+                        # Check if this is an interaction with a rainbow cell,
+                        # and that the second cell is not a rainbow cell
+                        if (grid[y][x][0] == 'rainbow' or grid[selector[1]][selector[0]][0] == 'rainbow') \
+                            and (grid[y][x][0] != grid[selector[1]][selector[0]][0]):
+
                             rainbow_coords: tuple[int, int]
                             other_coords: tuple[int, int]
                             if grid[y][x][0] == 'rainbow':
