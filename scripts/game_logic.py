@@ -82,10 +82,14 @@ def movements_from_grid(g: G) -> M:
 
 
 
-def detect_alignments(g: G, rainbow_cell: C, pre_game_detection: bool = False) -> tuple[dict[str, int], G]:
+def detect_alignments(g: G, cells: list[C], rainbow_cell: C, pre_game_detection: bool = False) -> tuple[dict[str, int], G]:
     '''Detects all the aligned cells in the grid and removes them
 
     :param G g: the grid to check
+    :param list[C] cells: the list of normal cell types
+    :param C rainbow_cell: the rainbow cell type
+    :param bool pre_game_detection: Does the function is called before the game has started?
+        Does the function has to create special cells?
     :return tuple[dict[str, int], G]: the number of aligned cells per type and the new grid
     '''
     aligned_cells = set()
@@ -94,41 +98,42 @@ def detect_alignments(g: G, rainbow_cell: C, pre_game_detection: bool = False) -
     # Check horizontal alignments
     for y in range(len(g)):
         for x in range(len(g[y])):
+            if g[y][x] in cells or g[y][x] == (None, None):
 
-            # Check hotizontal alignment
-            n = 1
-            while x+n < len(g[y]) and g[y][x][0] == g[y][x+n][0]: n += 1
-            if n >= 3:
-                for i in range(n): aligned_cells.add((x+i, y))
-            if n >= 4:
-                i = random.randint(0, n-1)
-                special_cells.add((x+i, y))
+                # Check hotizontal alignment
+                n = 1
+                while x+n < len(g[y]) and g[y][x][0] == g[y][x+n][0]: n += 1
+                if n >= 3:
+                    for i in range(n): aligned_cells.add((x+i, y))
+                if n >= 4:
+                    i = random.randint(0, n-1)
+                    special_cells.add((x+i, y))
 
-            # Check vertical alignment
-            n = 1
-            while y+n < len(g) and g[y][x][0] == g[y+n][x][0]: n += 1
-            if n >= 3:
-                for i in range(n): aligned_cells.add((x, y+i))
-            if n >= 4:
-                i = random.randint(0, n-1)
-                special_cells.add((x, y+i))
+                # Check vertical alignment
+                n = 1
+                while y+n < len(g) and g[y][x][0] == g[y+n][x][0]: n += 1
+                if n >= 3:
+                    for i in range(n): aligned_cells.add((x, y+i))
+                if n >= 4:
+                    i = random.randint(0, n-1)
+                    special_cells.add((x, y+i))
 
-            # Check diagonal alignments
-            n = 1
-            while y+n < len(g) and x+n < len(g[y]) and g[y][x][0] == g[y+n][x+n][0]: n += 1
-            if n >= 3:
-                for i in range(n): aligned_cells.add((x+i, y+i))
-            if n >= 4:
-                i = random.randint(0, n-1)
-                special_cells.add((x+i, y+i))
+                # Check diagonal alignments
+                n = 1
+                while y+n < len(g) and x+n < len(g[y]) and g[y][x][0] == g[y+n][x+n][0]: n += 1
+                if n >= 3:
+                    for i in range(n): aligned_cells.add((x+i, y+i))
+                if n >= 4:
+                    i = random.randint(0, n-1)
+                    special_cells.add((x+i, y+i))
 
-            n = 1
-            while y+n < len(g) and x-n >= 0 and g[y][x][0] == g[y+n][x-n][0]: n += 1
-            if n >= 3:
-                for i in range(n): aligned_cells.add((x-i, y+i))
-            if n >= 4:
-                i = random.randint(0, n-1)
-                special_cells.add((x-i, y+i))
+                n = 1
+                while y+n < len(g) and x-n >= 0 and g[y][x][0] == g[y+n][x-n][0]: n += 1
+                if n >= 3:
+                    for i in range(n): aligned_cells.add((x-i, y+i))
+                if n >= 4:
+                    i = random.randint(0, n-1)
+                    special_cells.add((x-i, y+i))
 
 
 
@@ -183,7 +188,7 @@ def special_cell_interaction(g: G, x: int, y: int, rainbow_cell: C, other_cell: 
     for y in range(len(g)):
         for x in range(len(g[y])):
             if g[y][x][0] == cell_type:
-                new_grid[y][x] == (None, None)
+                new_grid[y][x] = (None, None)
                 aligned_cell_count[cell_type] += 1
 
     return aligned_cell_count, new_grid    
@@ -227,8 +232,8 @@ class ScoreManager:
             i += 1
         if i < len(self.cells):
             self.scores[i] += amount
-        else: # The cell is not in the list
-            raise ValueError('The cell is not in the list of cells')
+        # else: # The cell is not in the list
+        #     raise ValueError('The cell is not in the list of cells')
         
     def update_score_from_dict(self, cell_dict: dict[str, int]) -> None:
         '''Updates the score from a dictionary of cells

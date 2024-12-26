@@ -1,7 +1,7 @@
 import pygame
 import configparser
 
-from scripts.game_logic import generate_grid, fill_grid, movements_from_grid,  detect_alignments, ScoreManager
+from scripts.game_logic import generate_grid, fill_grid, movements_from_grid,  detect_alignments, special_cell_interaction, ScoreManager
 from scripts.renderer import render_grid, render_score, render_selector, resize_cells, AnimationManager, LinearAnimation
 import scripts.assets as assets
 
@@ -51,13 +51,23 @@ score_manager = ScoreManager(cells, SCORE_OBJECTIVES)
 selector = (None, None)
 
 # Make sure the first generated grid does not contain any alignments
-aligned_cells, grid = detect_alignments(grid, rainbow_cell=resize_cells([('rainbow', TPACK.RAINBOW_CELL)], CELL_SIZE)[0], pre_game_detection=True)
+aligned_cells, grid = detect_alignments(
+    g=grid,
+    cells=cells,
+    rainbow_cell=resize_cells([('rainbow', TPACK.RAINBOW_CELL)], CELL_SIZE)[0], 
+    pre_game_detection=True
+)
 while aligned_cells:
     movements, grid = fill_grid(grid, cells)
     for mov in movements:
         x, y, cell = mov[2], mov[3], mov[4]
         grid[y][x] = cell
-    aligned_cells, grid = detect_alignments(grid, rainbow_cell=resize_cells([('rainbow', TPACK.RAINBOW_CELL)], CELL_SIZE)[0], pre_game_detection=True)
+    aligned_cells, grid = detect_alignments(
+        g=grid,
+        cells=cells,
+        rainbow_cell=resize_cells([('rainbow', TPACK.RAINBOW_CELL)], CELL_SIZE)[0],
+        pre_game_detection=True
+    )
 
 movements = movements_from_grid(grid)
 grid = generate_grid(*GRID_SIZE)
@@ -82,14 +92,35 @@ while running:
                 
                 if can_play and selector != (None, None):
                     if (x == selector[0] and abs(y - selector[1]) == 1) or (y == selector[1] and abs(x - selector[0]) == 1):
-                        animation_manager.add_animations(LinearAnimation.from_movements(
-                            [
-                                (x, y, selector[0], selector[1], grid[y][x]), (selector[0], selector[1], x, y, grid[selector[1]][selector[0]])
-                            ],
-                            CELL_SIZE, (GRID_MARGIN, GRID_MARGIN+CELL_SIZE), speed=500
-                        ))
-                        grid[y][x], grid[selector[1]][selector[0]] = (None, None), (None, None)
+
+                        # Check if this is an interaction with a rainbow cell
+                        if grid[y][x][0] == 'rainbow' or grid[selector[1]][selector[0]][0] == 'rainbow':
+                            rainbow_coords: tuple[int, int]
+                            other_coords: tuple[int, int]
+                            if grid[y][x][0] == 'rainbow':
+                                rainbow_coords = (x, y)
+                                other_coords = selector
+                            else:
+                                rainbow_coords = selector
+                                other_coords = (x, y)
+                            aligned_cells, grid = special_cell_interaction(
+                                g=grid,
+                                x=rainbow_coords[0],
+                                y=rainbow_coords[1],
+                                rainbow_cell=grid[rainbow_coords[1]][rainbow_coords[0]],
+                                other_cell=grid[other_coords[1]][other_coords[0]]
+                            )
+                            score_manager.update_score_from_dict(aligned_cells)
+                            
+                        # Otherwise, swap the two selected cells
+                        else: 
+                            animation_manager.add_animations(LinearAnimation.from_movements(
+                                [(x, y, selector[0], selector[1], grid[y][x]), (selector[0], selector[1], x, y, grid[selector[1]][selector[0]])],
+                                CELL_SIZE, (GRID_MARGIN, GRID_MARGIN+CELL_SIZE), speed=500
+                            ))
+                            grid[y][x], grid[selector[1]][selector[0]] = (None, None), (None, None)
                         selector = (None, None)
+
                         
                     else:
                         selector = (x, y)
@@ -136,7 +167,11 @@ while running:
         selector = (None, None)
 
     else: # If the animations are done, we check for alignments
-        aligned_cells, grid = detect_alignments(grid, rainbow_cell=resize_cells([('rainbow', TPACK.RAINBOW_CELL)], CELL_SIZE)[0])
+        aligned_cells, grid = detect_alignments(
+            g=grid,
+            cells=cells,
+            rainbow_cell=resize_cells([('rainbow', TPACK.RAINBOW_CELL)], CELL_SIZE)[0]
+        )
         score_manager.update_score_from_dict(aligned_cells)
         movements, grid = fill_grid(grid, cells)
         animation_manager.add_animations(LinearAnimation.from_movements(movements, CELL_SIZE, (GRID_MARGIN, GRID_MARGIN+CELL_SIZE), speed=1000, delay=0.01))
