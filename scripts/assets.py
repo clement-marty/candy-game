@@ -18,6 +18,15 @@ pygame.draw.rect(SUBSELECTOR, (150, 150, 150, 128), (0, 0, 64, 64), 10)
 
 class TexturePack:
 
+    BACKGROUND_IMAGE: pygame.Surface
+    CHECKMARK_ICON: pygame.Surface
+    RAINBOW_CELL: pygame.Surface
+    RED_CELL: pygame.Surface
+    GREEN_CELL: pygame.Surface
+    BLUE_CELL: pygame.Surface
+    YELLOW_CELL: pygame.Surface
+    PINK_CELL: pygame.Surface
+
     PATHS = {
         'BACKGROUND_IMAGE': 'background.png',
         'CHECKMARK_ICON': 'checkmark_icon.png',
