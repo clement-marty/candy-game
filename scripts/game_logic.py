@@ -23,6 +23,17 @@ def generate_grid(w: int, h: int) -> G:
         grid.append([(None, None)] * w)
     return grid
 
+def copy_grid(g: G) -> G:
+    '''Copies a grid
+
+    :param G g: the grid to copy
+    :return G: the copied grid
+    '''
+    new_grid = []
+    for i in g:
+        new_grid.append(i.copy())
+    return new_grid
+
 
 def generate_filled_grid(size: tuple[int, int], cells: list[C], rainbow_cell: C, cross_cell: C) -> M:
     '''Generates a filled grid of the specified size with the specified cells
@@ -68,11 +79,8 @@ def fill_grid(g: G, cells: list[C]) -> tuple[M, G]:
         If the cell is a new one, x and y are None
         The intermediate grid is the grid of all unaffected cells
     '''
-    new_grid = []
-    intermediate_grid = []
-    for i in g:
-        new_grid.append(i.copy())
-        intermediate_grid.append(i.copy())
+    new_grid = copy_grid(g)
+    intermediate_grid = copy_grid(g)
     movements = []
 
     # Apply gravity to the grid
@@ -188,9 +196,7 @@ def detect_alignments(g: G, cells: list[C], rainbow_cell: C, cross_cell: C, add_
 
 
     # Remove aligned cells
-    new_grid = []
-    for i in g:
-        new_grid.append(i.copy())
+    new_grid = copy_grid(g)
     for y in range(len(g)):
         for x in range(len(g[y])):
             if (x, y) in aligned_cells:
@@ -230,14 +236,8 @@ def rainbow_cell_interaction(g: G, x: int, y: int, rainbow_cell: C, other_cell: 
     :param C other_cell: the other cell
     :return tuple[dict[str, int], G]: the number of aligned cells per type and the new grid
     '''
-
-    # Copy the grid
-    new_grid = []
-    for i in g:
-        new_grid.append(i.copy())
-
-    # Remove the special cell
-    new_grid[y][x] = (None, None)
+    new_grid = copy_grid(g)
+    new_grid[y][x] = (None, None) # Remove the special cell
 
     # Remove all occurences of the interacted cell
     cell_type = other_cell[0]
