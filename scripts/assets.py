@@ -21,6 +21,7 @@ class TexturePack:
     BACKGROUND_IMAGE: pygame.Surface
     CHECKMARK_ICON: pygame.Surface
     RAINBOW_CELL: pygame.Surface
+    CROSS_CELL: pygame.Surface
     RED_CELL: pygame.Surface
     GREEN_CELL: pygame.Surface
     BLUE_CELL: pygame.Surface
@@ -31,6 +32,7 @@ class TexturePack:
         'BACKGROUND_IMAGE': 'background.png',
         'CHECKMARK_ICON': 'checkmark_icon.png',
         'RAINBOW_CELL': 'cells/rainbow_cell.png',
+        'CROSS_CELL': 'cells/cross_cell.png',
         'RED_CELL': 'cells/red_cell.png',
         'GREEN_CELL': 'cells/green_cell.png',
         'BLUE_CELL': 'cells/blue_cell.png',
