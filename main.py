@@ -1,9 +1,9 @@
 import pygame
 import configparser
 
-from scripts.game_logic import generate_grid, generate_filled_grid, fill_grid, movements_from_grid,  detect_alignments, special_cell_interaction, ScoreManager
-from scripts.renderer import render_grid, render_score, render_selector, resize_cells, AnimationManager, LinearAnimation
-import scripts.assets as assets
+import scripts.assets as Assets
+import scripts.renderer as Renderer
+import scripts.game_logic as GameLogic
 
 
 
@@ -14,7 +14,7 @@ def read_config() -> None:
     global GAME_FPS, TPACK, GRID_SIZE, CELL_SIZE, GRID_MARGIN, SCORE_OBJECTIVES, MAX_RAINBOW_CELLS
     GAME_FPS = config.getint('general', 'frames_per_second')
     try:
-        TPACK = assets.TexturePack(f'assets/{config.get('general', 'texture_pack')}')
+        TPACK = Assets.TexturePack(f'assets/{config.get('general', 'texture_pack')}')
     except FileNotFoundError:
         raise ValueError(f'Invalid texture pack: {config.get('general', 'texture_pack')}')
     GRID_SIZE = (
@@ -32,33 +32,30 @@ def read_config() -> None:
 # Initialize the game
 read_config()
 pygame.init()
-# pygame.font.init()
-# font = pygame.font.SysFont('Ubuntu', CELL_SIZE)
 
 
-grid = generate_grid(*GRID_SIZE)
+grid = GameLogic.generate_grid(*GRID_SIZE)
 screen_size = (
     GRID_MARGIN * 2 + CELL_SIZE * GRID_SIZE[0],
     GRID_MARGIN * 2 + CELL_SIZE * GRID_SIZE[1] + CELL_SIZE
 )
 
-cells = resize_cells(TPACK.CELLS, CELL_SIZE)
+cells = Renderer.resize_cells(TPACK.CELLS, CELL_SIZE)
 rainbow_cells_nb = 0
-# movements, grid = fill_grid(grid, cells)
 
 screen = pygame.display.set_mode(screen_size)
 pygame.display.set_caption('Candy Game')
-animation_manager = AnimationManager()
-score_manager = ScoreManager(cells, SCORE_OBJECTIVES)
+animation_manager = Renderer.AnimationManager()
+score_manager = GameLogic.ScoreManager(cells, SCORE_OBJECTIVES)
 selector = (None, None)
 
 
-grid = generate_grid(*GRID_SIZE)
-animation_manager.add_animations(LinearAnimation.from_movements(
-    movements=generate_filled_grid(
+grid = GameLogic.generate_grid(*GRID_SIZE)
+animation_manager.add_animations(Renderer.LinearAnimation.from_movements(
+    movements=GameLogic.generate_filled_grid(
         size=GRID_SIZE,
         cells=cells,
-        rainbow_cell=resize_cells([('rainbow', TPACK.RAINBOW_CELL)], CELL_SIZE)[0]
+        rainbow_cell=Renderer.resize_cells([('rainbow', TPACK.RAINBOW_CELL)], CELL_SIZE)[0]
     ),
     cell_size=CELL_SIZE,
     grid_margin=(GRID_MARGIN, GRID_MARGIN+CELL_SIZE),
@@ -100,7 +97,7 @@ while running:
                             else:
                                 rainbow_coords = selector
                                 other_coords = (x, y)
-                            aligned_cells, grid = special_cell_interaction(
+                            aligned_cells, grid = GameLogic.special_cell_interaction(
                                 g=grid,
                                 x=rainbow_coords[0],
                                 y=rainbow_coords[1],
@@ -112,7 +109,7 @@ while running:
                             
                         # Otherwise, swap the two selected cells
                         else: 
-                            animation_manager.add_animations(LinearAnimation.from_movements(
+                            animation_manager.add_animations(Renderer.LinearAnimation.from_movements(
                                 [(x, y, selector[0], selector[1], grid[y][x]), (selector[0], selector[1], x, y, grid[selector[1]][selector[0]])],
                                 CELL_SIZE, (GRID_MARGIN, GRID_MARGIN+CELL_SIZE), speed=500
                             ))
@@ -130,7 +127,7 @@ while running:
         pygame.transform.scale(TPACK.BACKGROUND_IMAGE, screen_size), (0, 0)
     )
 
-    render_grid(
+    Renderer.render_grid(
         screen=screen, 
         grid=grid,
         texture_pack=TPACK,
@@ -138,7 +135,7 @@ while running:
         y=GRID_MARGIN+CELL_SIZE,
         cell_size=CELL_SIZE
     )
-    render_score(
+    Renderer.render_score(
         screen=screen,
         cells=score_manager.cells,
         objectives=score_manager.objectives,
@@ -165,23 +162,21 @@ while running:
         selector = (None, None)
 
     else: # If the animations are done, we check for alignments
-        aligned_cells, rainbow_cells, grid = detect_alignments(
+        aligned_cells, rainbow_cells, grid = GameLogic.detect_alignments(
             g=grid,
             cells=cells,
-            rainbow_cell=resize_cells([('rainbow', TPACK.RAINBOW_CELL)], CELL_SIZE)[0],
+            rainbow_cell=Renderer.resize_cells([('rainbow', TPACK.RAINBOW_CELL)], CELL_SIZE)[0],
             add_special_cells= True if rainbow_cells_nb < MAX_RAINBOW_CELLS else False
         )
         rainbow_cells_nb += rainbow_cells
         score_manager.update_score_from_dict(aligned_cells)
-        movements, grid = fill_grid(grid, cells)
-        animation_manager.add_animations(LinearAnimation.from_movements(movements, CELL_SIZE, (GRID_MARGIN, GRID_MARGIN+CELL_SIZE), speed=1000, delay=0.01))
+        movements, grid = GameLogic.fill_grid(grid, cells)
+        animation_manager.add_animations(Renderer.LinearAnimation.from_movements(movements, CELL_SIZE, (GRID_MARGIN, GRID_MARGIN+CELL_SIZE), speed=1000, delay=0.01))
 
 
     if selector != (None, None):
-        render_selector(screen, selector, TPACK, CELL_SIZE, GRID_SIZE, (GRID_MARGIN, GRID_MARGIN+CELL_SIZE))
+        Renderer.render_selector(screen, selector, TPACK, CELL_SIZE, GRID_SIZE, (GRID_MARGIN, GRID_MARGIN+CELL_SIZE))
 
-    # if has_won:
-    #     screen.blit(font.render('You won!', False, (0, 0, 0)), (GRID_MARGIN, GRID_MARGIN//2))
 
     # Update the display
     pygame.display.flip()
