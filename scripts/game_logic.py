@@ -21,8 +21,38 @@ def generate_grid(w: int, h: int) -> G:
     grid = []
     for i in range(h):
         grid.append([(None, None)] * w)
-
     return grid
+
+
+def generate_filled_grid(size: tuple[int, int], cells: list[C], rainbow_cell: C) -> M:
+    '''Generates a filled grid of the specified size with the specified cells
+    
+    :param tuple[int, int] size: the size of the grid
+    :param list[C] cells: the list of cells to use
+    :param C rainbow_cell: the rainbow cell
+    :return M: the list of movements that were made to fill the grid
+    '''
+    grid = generate_grid(*size)
+    movements, grid = fill_grid(grid, cells)
+    aligned_cells, _, grid = detect_alignments(
+        g=grid,
+        cells=cells,
+        rainbow_cell=rainbow_cell,
+        add_special_cells=False
+    )
+    # Make sure the generated grid does not contain any alignment
+    while aligned_cells:
+        movements, grid = fill_grid(grid, cells)
+        for mov in movements:
+            x, y, cell = mov[2], mov[3], mov[4]
+            grid[y][x] = cell
+        aligned_cells, _, grid = detect_alignments(
+            g=grid,
+            cells=cells,
+            rainbow_cell=rainbow_cell,
+            add_special_cells=False
+        )
+    return movements_from_grid(grid)
 
 
 def fill_grid(g: G, cells: list[C]) -> tuple[M, G]:

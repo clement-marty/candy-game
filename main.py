@@ -1,7 +1,7 @@
 import pygame
 import configparser
 
-from scripts.game_logic import generate_grid, fill_grid, movements_from_grid,  detect_alignments, special_cell_interaction, ScoreManager
+from scripts.game_logic import generate_grid, generate_filled_grid, fill_grid, movements_from_grid,  detect_alignments, special_cell_interaction, ScoreManager
 from scripts.renderer import render_grid, render_score, render_selector, resize_cells, AnimationManager, LinearAnimation
 import scripts.assets as assets
 
@@ -44,7 +44,7 @@ screen_size = (
 
 cells = resize_cells(TPACK.CELLS, CELL_SIZE)
 rainbow_cells_nb = 0
-movements, grid = fill_grid(grid, cells)
+# movements, grid = fill_grid(grid, cells)
 
 screen = pygame.display.set_mode(screen_size)
 pygame.display.set_caption('Candy Game')
@@ -52,28 +52,20 @@ animation_manager = AnimationManager()
 score_manager = ScoreManager(cells, SCORE_OBJECTIVES)
 selector = (None, None)
 
-# Make sure the first generated grid does not contain any alignments
-aligned_cells, _, grid = detect_alignments(
-    g=grid,
-    cells=cells,
-    rainbow_cell=resize_cells([('rainbow', TPACK.RAINBOW_CELL)], CELL_SIZE)[0], 
-    add_special_cells=False
-)
-while aligned_cells:
-    movements, grid = fill_grid(grid, cells)
-    for mov in movements:
-        x, y, cell = mov[2], mov[3], mov[4]
-        grid[y][x] = cell
-    aligned_cells, _, grid = detect_alignments(
-        g=grid,
-        cells=cells,
-        rainbow_cell=resize_cells([('rainbow', TPACK.RAINBOW_CELL)], CELL_SIZE)[0],
-        add_special_cells=False
-    )
 
-movements = movements_from_grid(grid)
 grid = generate_grid(*GRID_SIZE)
-animation_manager.add_animations(LinearAnimation.from_movements(movements, CELL_SIZE, (GRID_MARGIN, GRID_MARGIN+CELL_SIZE), speed=1000, delay=0.01))
+animation_manager.add_animations(LinearAnimation.from_movements(
+    movements=generate_filled_grid(
+        size=GRID_SIZE,
+        cells=cells,
+        rainbow_cell=resize_cells([('rainbow', TPACK.RAINBOW_CELL)], CELL_SIZE)[0]
+    ),
+    cell_size=CELL_SIZE,
+    grid_margin=(GRID_MARGIN, GRID_MARGIN+CELL_SIZE),
+    speed=1000,
+    delay=0.01
+))
+
 
 clock = pygame.time.Clock()
 can_play = False
