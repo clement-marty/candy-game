@@ -41,6 +41,10 @@ screen_size = (
 )
 
 cells = Renderer.resize_cells(TPACK.CELLS, CELL_SIZE)
+rainbow_cell, cross_cell = Renderer.resize_cells([
+    ('rainbow', TPACK.RAINBOW_CELL),
+    ('cross', TPACK.CROSS_CELL)
+], CELL_SIZE)
 rainbow_cells_nb = 0
 
 screen = pygame.display.set_mode(screen_size)
@@ -55,7 +59,8 @@ animation_manager.add_animations(Renderer.LinearAnimation.from_movements(
     movements=GameLogic.generate_filled_grid(
         size=GRID_SIZE,
         cells=cells,
-        rainbow_cell=Renderer.resize_cells([('rainbow', TPACK.RAINBOW_CELL)], CELL_SIZE)[0]
+        rainbow_cell=rainbow_cell,
+        cross_cell=cross_cell,
     ),
     cell_size=CELL_SIZE,
     grid_margin=(GRID_MARGIN, GRID_MARGIN+CELL_SIZE),
@@ -162,10 +167,11 @@ while running:
         selector = (None, None)
 
     else: # If the animations are done, we check for alignments
-        aligned_cells, rainbow_cells, grid = GameLogic.detect_alignments(
+        aligned_cells, rainbow_cells, cross_cells, grid = GameLogic.detect_alignments(
             g=grid,
             cells=cells,
-            rainbow_cell=Renderer.resize_cells([('rainbow', TPACK.RAINBOW_CELL)], CELL_SIZE)[0],
+            rainbow_cell=rainbow_cell,
+            cross_cell=cross_cell,
             add_special_cells= True if rainbow_cells_nb < MAX_RAINBOW_CELLS else False
         )
         rainbow_cells_nb += rainbow_cells
