@@ -195,8 +195,8 @@ def detect_alignments(g: G, cells: list[C], rainbow_cell: C, add_special_cells: 
     )
 
 
-def special_cell_interaction(g: G, x: int, y: int, rainbow_cell: C, other_cell: C) -> tuple[dict[str, int], G]:
-    '''Applies the effect of a special cell on the grid, 
+def rainbow_cell_interaction(g: G, x: int, y: int, rainbow_cell: C, other_cell: C) -> tuple[dict[str, int], G]:
+    '''Applies the effect of a rainbow cell on the grid, 
     by removing all cells of the same type of the one that was interacted with
 
     :param G g: the grid to check

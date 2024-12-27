@@ -97,7 +97,7 @@ while running:
                             else:
                                 rainbow_coords = selector
                                 other_coords = (x, y)
-                            aligned_cells, grid = GameLogic.special_cell_interaction(
+                            aligned_cells, grid = GameLogic.rainbow_cell_interaction(
                                 g=grid,
                                 x=rainbow_coords[0],
                                 y=rainbow_coords[1],
