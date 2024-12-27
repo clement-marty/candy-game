@@ -122,7 +122,7 @@ def detect_alignments(g: G, cells: list[C], rainbow_cell: C, add_special_cells: 
     :return tuple[dict[str, int], G]: the number of aligned cells per type, the number of rainbow cells added and the new grid
     '''
     aligned_cells = set()
-    special_cells = set()
+    rainbow_cells = set()
 
     # Check horizontal alignments
     for y in range(len(g)):
@@ -134,35 +134,35 @@ def detect_alignments(g: G, cells: list[C], rainbow_cell: C, add_special_cells: 
                 while x+n < len(g[y]) and g[y][x][0] == g[y][x+n][0]: n += 1
                 if n >= 3:
                     for i in range(n): aligned_cells.add((x+i, y))
-                if n >= 4:
+                if n >= 5:
                     i = random.randint(0, n-1)
-                    special_cells.add((x+i, y))
+                    rainbow_cells.add((x+i, y))
 
                 # Check vertical alignment
                 n = 1
                 while y+n < len(g) and g[y][x][0] == g[y+n][x][0]: n += 1
                 if n >= 3:
                     for i in range(n): aligned_cells.add((x, y+i))
-                if n >= 4:
+                if n >= 5:
                     i = random.randint(0, n-1)
-                    special_cells.add((x, y+i))
+                    rainbow_cells.add((x, y+i))
 
                 # Check diagonal alignments
                 n = 1
                 while y+n < len(g) and x+n < len(g[y]) and g[y][x][0] == g[y+n][x+n][0]: n += 1
                 if n >= 3:
                     for i in range(n): aligned_cells.add((x+i, y+i))
-                if n >= 4:
+                if n >= 5:
                     i = random.randint(0, n-1)
-                    special_cells.add((x+i, y+i))
+                    rainbow_cells.add((x+i, y+i))
 
                 n = 1
                 while y+n < len(g) and x-n >= 0 and g[y][x][0] == g[y+n][x-n][0]: n += 1
                 if n >= 3:
                     for i in range(n): aligned_cells.add((x-i, y+i))
-                if n >= 4:
+                if n >= 5:
                     i = random.randint(0, n-1)
-                    special_cells.add((x-i, y+i))
+                    rainbow_cells.add((x-i, y+i))
 
 
 
@@ -177,7 +177,7 @@ def detect_alignments(g: G, cells: list[C], rainbow_cell: C, add_special_cells: 
 
     # Add the specials cells
     if add_special_cells:
-        for x, y in special_cells:
+        for x, y in rainbow_cells:
             new_grid[y][x] = rainbow_cell
 
     # count the number of aligned cells per type
@@ -190,7 +190,7 @@ def detect_alignments(g: G, cells: list[C], rainbow_cell: C, add_special_cells: 
     
     return (
         aligned_cells_count,
-        len(special_cells) if add_special_cells else 0,
+        len(rainbow_cells) if add_special_cells else 0,
         new_grid
     )
 
