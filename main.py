@@ -11,7 +11,7 @@ def read_config() -> None:
     '''Reads the configuration file'''
     config = configparser.ConfigParser()
     config.read('config.ini')
-    global GAME_FPS, TPACK, GRID_SIZE, CELL_SIZE, GRID_MARGIN, SCORE_OBJECTIVES, MAX_RAINBOW_CELLS
+    global GAME_FPS, TPACK, GRID_SIZE, CELL_SIZE, GRID_MARGIN, SCORE_OBJECTIVES, MAX_RAINBOW_CELLS, MAX_CROSS_CELLS
     GAME_FPS = config.getint('general', 'frames_per_second')
     try:
         TPACK = Assets.TexturePack(f'assets/{config.get('general', 'texture_pack')}')
@@ -27,6 +27,7 @@ def read_config() -> None:
     for i in ['red_cells', 'green_cells', 'blue_cells', 'yellow_cells', 'purple_cells', 'pink_cells']:
         SCORE_OBJECTIVES.append(config.getint('game-objectives', i))
     MAX_RAINBOW_CELLS = config.getint('game', 'max_rainbow_cells')
+    MAX_CROSS_CELLS = config.getint('game', 'max_cross_cells')
 
     
 # Initialize the game
@@ -34,7 +35,6 @@ read_config()
 pygame.init()
 
 
-grid = GameLogic.generate_grid(*GRID_SIZE)
 screen_size = (
     GRID_MARGIN * 2 + CELL_SIZE * GRID_SIZE[0],
     GRID_MARGIN * 2 + CELL_SIZE * GRID_SIZE[1] + CELL_SIZE
@@ -46,6 +46,7 @@ rainbow_cell, cross_cell = Renderer.resize_cells([
     ('cross', TPACK.CROSS_CELL)
 ], CELL_SIZE)
 rainbow_cells_nb = 0
+cross_cells_nb = 0
 
 screen = pygame.display.set_mode(screen_size)
 pygame.display.set_caption('Candy Game')
@@ -56,11 +57,13 @@ selector = (None, None)
 
 grid = GameLogic.generate_grid(*GRID_SIZE)
 animation_manager.add_animations(Renderer.LinearAnimation.from_movements(
-    movements=GameLogic.generate_filled_grid(
-        size=GRID_SIZE,
-        cells=cells,
-        rainbow_cell=rainbow_cell,
-        cross_cell=cross_cell,
+    movements=GameLogic.movements_from_grid(
+        GameLogic.generate_filled_grid(
+            size=GRID_SIZE,
+            cells=cells,
+            rainbow_cell=rainbow_cell,
+            cross_cell=cross_cell,
+        )
     ),
     cell_size=CELL_SIZE,
     grid_margin=(GRID_MARGIN, GRID_MARGIN+CELL_SIZE),
@@ -111,6 +114,26 @@ while running:
                             )
                             score_manager.update_score_from_dict(aligned_cells)
                             rainbow_cells_nb -= 1
+                        
+                        # Check if this is an interaction with a cross cell
+                        elif (grid[y][x][0] == 'cross' or grid[selector[1]][selector[0]][0] == 'cross'):
+
+                            cross_coords: tuple[int, int]
+                            other_coords: tuple[int, int]
+                            if grid[y][x][0] == 'cross':
+                                cross_coords = (x, y)
+                                other_coords = selector
+                            else:
+                                cross_coords = selector
+                                other_coords = (x, y)
+                            aligned_cells, grid = GameLogic.cross_cell_interaction(
+                                g=grid,
+                                cross_cell_pos=cross_coords,
+                                other_cell_pos=other_coords
+                            )
+                            score_manager.update_score_from_dict(aligned_cells)
+                            cross_cells_nb -= 1
+                        
                             
                         # Otherwise, swap the two selected cells
                         else: 
@@ -172,9 +195,11 @@ while running:
             cells=cells,
             rainbow_cell=rainbow_cell,
             cross_cell=cross_cell,
-            add_special_cells= True if rainbow_cells_nb < MAX_RAINBOW_CELLS else False
+            add_rainbow_cells= True if rainbow_cells_nb < MAX_RAINBOW_CELLS else False,
+            add_cross_cells= True if cross_cells_nb < MAX_CROSS_CELLS else False
         )
         rainbow_cells_nb += rainbow_cells
+        cross_cells_nb += cross_cells
         score_manager.update_score_from_dict(aligned_cells)
         movements, grid = GameLogic.fill_grid(grid, cells)
         animation_manager.add_animations(Renderer.LinearAnimation.from_movements(movements, CELL_SIZE, (GRID_MARGIN, GRID_MARGIN+CELL_SIZE), speed=1000, delay=0.01))

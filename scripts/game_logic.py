@@ -35,23 +35,27 @@ def copy_grid(g: G) -> G:
     return new_grid
 
 
-def generate_filled_grid(size: tuple[int, int], cells: list[C], rainbow_cell: C, cross_cell: C) -> M:
+def generate_filled_grid(size: tuple[int, int], cells: list[C], rainbow_cell: C, cross_cell: C) -> G:
     '''Generates a filled grid of the specified size with the specified cells
     
     :param tuple[int, int] size: the size of the grid
     :param list[C] cells: the list of cells to use
     :param C rainbow_cell: the rainbow cell type
     :param C cross_cell: the cross cell type
-    :return M: the list of movements that were made to fill the grid
+    :return G: the generated grid
     '''
     grid = generate_grid(*size)
     movements, grid = fill_grid(grid, cells)
+    for mov in movements:
+        x, y, cell = mov[2], mov[3], mov[4]
+        grid[y][x] = cell
     aligned_cells, _, _, grid = detect_alignments(
         g=grid,
         cells=cells,
         rainbow_cell=rainbow_cell,
         cross_cell=cross_cell,
-        add_special_cells=False
+        add_rainbow_cells=False,
+        add_cross_cells=False
     )
     # Make sure the generated grid does not contain any alignment
     while aligned_cells:
@@ -64,9 +68,10 @@ def generate_filled_grid(size: tuple[int, int], cells: list[C], rainbow_cell: C,
             cells=cells,
             rainbow_cell=rainbow_cell,
             cross_cell=cross_cell,
-            add_special_cells=False
+            add_rainbow_cells=False,
+            add_cross_cells=False
         )
-    return movements_from_grid(grid)
+    return grid
 
 
 def fill_grid(g: G, cells: list[C]) -> tuple[M, G]:
@@ -117,20 +122,22 @@ def movements_from_grid(g: G) -> M:
     movements = []
     for y in range(len(g)-1, -1, -1):
         for x in range(len(g[y])):
-            movements.append((None, None, x, y, g[y][x]))
+            if g[y][x][0] is not None:
+                movements.append((None, None, x, y, g[y][x]))
     
     return movements
 
 
 
-def detect_alignments(g: G, cells: list[C], rainbow_cell: C, cross_cell: C, add_special_cells: bool = True) -> tuple[dict[str, int], int, int, G]:
+def detect_alignments(g: G, cells: list[C], rainbow_cell: C, cross_cell: C, add_rainbow_cells: bool = True, add_cross_cells: bool = True) -> tuple[dict[str, int], int, int, G]:
     '''Detects all the aligned cells in the grid and removes them
 
     :param G g: the grid to check
     :param list[C] cells: the list of normal cell types
     :param C rainbow_cell: the rainbow cell type
     :param C cross_cell: the cross cell type
-    :param bool add_special_cells: Does the function has to create special cells?
+    :param bool add_rainbow_cells: Does the function has to create rainbow cells?
+    :param bool add_cross_cells: Does the function has to create cross cells?
     :return tuple[dict[str, int], int, int, G]:
         - the number of aligned cells per type
         - the number of rainbow cells added
@@ -144,7 +151,7 @@ def detect_alignments(g: G, cells: list[C], rainbow_cell: C, cross_cell: C, add_
     # Check horizontal alignments
     for y in range(len(g)):
         for x in range(len(g[y])):
-            if g[y][x] in cells or g[y][x] == (None, None):
+            if g[y][x] in cells:
 
                 # Check hotizontal alignment
                 n = 1
@@ -203,9 +210,10 @@ def detect_alignments(g: G, cells: list[C], rainbow_cell: C, cross_cell: C, add_
                 new_grid[y][x] = (None, None)
 
     # Add the specials cells
-    if add_special_cells:
+    if add_rainbow_cells:
         for x, y in rainbow_cells:
             new_grid[y][x] = rainbow_cell
+    if add_cross_cells:
         for x, y in cross_cells:
             new_grid[y][x] = cross_cell
 
@@ -219,8 +227,8 @@ def detect_alignments(g: G, cells: list[C], rainbow_cell: C, cross_cell: C, add_
     
     return (
         aligned_cells_count,
-        len(rainbow_cells) if add_special_cells else 0,
-        len(cross_cells) if add_special_cells else 0,
+        len(rainbow_cells) if add_rainbow_cells else 0,
+        len(cross_cells) if add_cross_cells else 0,
         new_grid
     )
 
@@ -250,6 +258,41 @@ def rainbow_cell_interaction(g: G, x: int, y: int, rainbow_cell: C, other_cell: 
 
     return aligned_cell_count, new_grid    
 
+
+def cross_cell_interaction(g: G, cross_cell_pos: tuple[int, int], other_cell_pos: tuple[int, int]) -> tuple[dict[str, int], G]:
+    '''Applies the effect of a cross cell on the grid, 
+    by removing all cells in the same row or column as the one that was interacted with
+
+    :param G g: the grid to check
+    :param tuple[int, int] cross_cell_pos: the position of the cross cell
+    :param tuple[int, int] other_cell_pos: the position of the other cell
+    :return tuple[dict[str, int], G]: the number of aligned cells per type and the new grid
+    '''
+    new_grid = copy_grid(g)
+    new_grid[cross_cell_pos[1]][cross_cell_pos[0]] = (None, None) # Remove the special cell
+    aligned_cell_count = {}
+
+    if cross_cell_pos[0] == other_cell_pos[0]: # The cells are on the same column
+
+        # Remove all cells in the column
+        for y in range(len(g)):
+            if g[y][cross_cell_pos[0]][0] in aligned_cell_count:
+                aligned_cell_count[g[y][cross_cell_pos[0]][0]] += 1
+            else:
+                aligned_cell_count[g[y][cross_cell_pos[0]][0]] = 1
+            new_grid[y][cross_cell_pos[0]] = (None, None)
+
+    elif cross_cell_pos[1] == other_cell_pos[1]: # The cells are on the same row
+
+        # Remove all cells in the row
+        for x in range(len(g[0])):
+            if g[cross_cell_pos[1]][x][0] in aligned_cell_count:
+                aligned_cell_count[g[cross_cell_pos[1]][x][0]] += 1
+            else:
+                aligned_cell_count[g[cross_cell_pos[1]][x][0]] = 1
+            new_grid[cross_cell_pos[1]][x] = (None, None)
+    
+    return aligned_cell_count, new_grid
 
 
 

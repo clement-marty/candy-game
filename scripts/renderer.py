@@ -269,7 +269,11 @@ class AnimationManager:
         :param float t: the time elapsed since the last update, in seconds
         '''
         for animation in self.animations:
-            screen.blit(*animation.update(t))
+            try:
+                screen.blit(*animation.update(t))
+            except TypeError as e:
+                print(animation.tile_name, animation.sprite, animation.start_x, animation.start_y, animation.new_x, animation.new_y, animation.t, animation.duration)
+                # raise e
 
     
     def finished_animations(self) -> list[LinearAnimation]:
